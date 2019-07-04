@@ -1,0 +1,5 @@
+db.location: C:\\Users\\Tintin-Mask\\.m2\\repository\\mysql\\mysql-connector-java\\8.0.13\\mysql-connector-java-8.0.13.jar
+db.driverClass: com.mysql.cj.jdbc.Driver
+db.connectionUrl: jdbc:mysql://localhost:3306/demo_database?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Hongkong
+db.username: root
+db.password: admin
