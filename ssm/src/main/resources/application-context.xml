@@ -13,7 +13,7 @@
         http://www.springframework.org/schema/tx/spring-tx.xsd
         http://www.springframework.org/schema/aop
         http://www.springframework.org/schema/aop/spring-aop.xsd">
-	<context:component-scan base-package="com.ssm.service" />
+	<context:component-scan base-package="com.ssm" />
 	<!-- <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"> 
 		<property name="location" value="classpath:jdbc2.properties" /> </bean> -->
 	<context:property-placeholder
@@ -33,7 +33,7 @@
 		<property name="dataSource" ref="dataSource" />
 		<!-- 自动扫描mapping.xml文件 -->
 		<property name="mapperLocations"
-			value="classpath:mapper/*.xml" />
+			value="classpath*:mapper/*.xml" />
 	</bean>
 
 	<!-- Mapper接口所在包名，Spring会自动查找其下的Mapper -->

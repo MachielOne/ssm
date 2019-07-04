@@ -134,4 +134,12 @@ public class Book {
     public void setHireDate(Date hireDate) {
         this.hireDate = hireDate;
     }
+
+	@Override
+	public String toString() {
+		return "Book [empId=" + empId + ", empTitle=" + empTitle + ", empAuthor=" + empAuthor + ", hireDate=" + hireDate
+				+ "]";
+	}
+    
+    
 }
