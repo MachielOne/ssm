@@ -12,5 +12,6 @@ public interface BookService {
 	public int insertItem(Book book);
 
 	public int deleteById(Integer id);
+	public List<Book> selectAll();
 
 }

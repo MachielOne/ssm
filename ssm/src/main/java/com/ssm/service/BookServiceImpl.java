@@ -1,5 +1,7 @@
 package com.ssm.service;
 
+import java.util.List;
+
 import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
@@ -26,6 +28,11 @@ public class BookServiceImpl implements BookService {
 
 	public int deleteById(Integer id) {
 		return this.bookMapper.deleteByPrimaryKey(id);
+	}
+
+	@Override
+	public List<Book> selectAll() {
+		return this.bookMapper.selectAll();
 	}
 
 }
