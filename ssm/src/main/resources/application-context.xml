@@ -17,7 +17,7 @@
 	<!-- <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"> 
 		<property name="location" value="classpath:jdbc2.properties" /> </bean> -->
 	<context:property-placeholder
-		location="classpath:jdbc2.properties" />
+		location="classpath*:*.properties" />
 	<bean id="dataSource"
 		class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
 		<!-- 指定连接数据库的驱动 -->
@@ -34,13 +34,23 @@
 		<!-- 自动扫描mapping.xml文件 -->
 		<property name="mapperLocations"
 			value="classpath*:mapper/*.xml" />
+		<!--开启redis缓存 -->
+		<property name="configurationProperties">
+			<props>
+				<!--全局映射器启用缓存 -->
+				<prop key="cacheEnabled">true</prop>
+				<!--查询时，关闭关连对象即时加载以提高性能 -->
+				<prop key="lazyLoadingEnabled">false</prop>
+				<!-- 设置关联对象加载的形态，此处为按需要加载字段（加载字段由sql决定），不会加载关联表的所有字段，以提高性能 -->
+				<prop key="aggressiveLazyLoading">true</prop>
+			</props>
+		</property>
 	</bean>
 
 	<!-- Mapper接口所在包名，Spring会自动查找其下的Mapper -->
 	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
 		<property name="basePackage" value="com.ssm.dao" />
-		<!-- <property name="sqlSessionFactoryBeanName"
-			value="sqlSessionFactory"></property> -->
+		<!-- <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property> -->
 	</bean>
 
 	<!-- 由spring管理mybatis的事物 -->
@@ -50,11 +60,17 @@
 	</bean>
 	<tx:advice id="txAdvice"
 		transaction-manager="transactionManager">
-		<tx:attributes> <tx:method name="delete*" propagation="REQUIRED" /> 
-			<tx:method name="insert*" propagation="REQUIRED" /> <tx:method name="update*" 
-			propagation="REQUIRED" /> <tx:method name="find*" propagation="SUPPORTS" 
-			read-only="true" /> <tx:method name="get*" propagation="SUPPORTS" read-only="true" 
-			/> <tx:method name="select*" propagation="SUPPORTS" read-only="true" /> </tx:attributes>
+		<tx:attributes>
+			<tx:method name="delete*" propagation="REQUIRED" />
+			<tx:method name="insert*" propagation="REQUIRED" />
+			<tx:method name="update*" propagation="REQUIRED" />
+			<tx:method name="find*" propagation="SUPPORTS"
+				read-only="true" />
+			<tx:method name="get*" propagation="SUPPORTS"
+				read-only="true" />
+			<tx:method name="select*" propagation="SUPPORTS"
+				read-only="true" />
+		</tx:attributes>
 	</tx:advice>
 
 	<!-- <aop:config> <aop:pointcut id="transactionPointcut" expression="execution(* 
@@ -64,5 +80,61 @@
 		<aop:advisor advice-ref="txAdvice"
 			pointcut="execution(* com.ssm.service.*.*(..))" />
 	</aop:config>
+	<!-- redis config start -->
+	<!-- 配置JedisPoolConfig实例 -->
+	<bean id="jedisPoolConfig"
+		class="redis.clients.jedis.JedisPoolConfig">
+		<property name="maxIdle" value="${redis.maxIdle}" />
+		<property name="maxTotal" value="${redis.maxActive}" />
+		<property name="maxWaitMillis" value="${redis.maxWait}" />
+		<property name="testOnBorrow" value="${redis.testOnBorrow}" />
+	</bean>
 
+	<!-- 配置JedisConnectionFactory -->
+	<bean id="jedisConnectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="hostName" value="${redis.host}" />
+		<property name="port" value="${redis.port}" />
+		<!-- <property name="password" value="${redis.pass}" /> -->
+		<property name="database" value="${redis.dbIndex}" />
+		<property name="poolConfig" ref="jedisPoolConfig" />
+	</bean>
+
+	<!-- 配置RedisTemplate -->
+	<bean id="redisTemplate"
+		class="org.springframework.data.redis.core.RedisTemplate">
+		<property name="connectionFactory"
+			ref="jedisConnectionFactory" />
+		<!-- 如果不配置Serializer，那么存储的时候只能使用String，如果用对象类型存储，那么会提示错误 can't cast to 
+			String！！！ -->
+		<property name="keySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+		</property>
+		<property name="hashKeySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+		</property>
+		<property name="valueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer" />
+		</property>
+		<property name="hashValueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer" />
+		</property>
+		<property name="enableTransactionSupport" value="true"></property>
+	</bean>
+
+	<!-- 配置RedisCacheManager -->
+	<!-- <bean id="redisCacheManager" class="org.springframework.data.redis.cache.RedisCacheManager"> 
+		<constructor-arg ref="defaultRedisCacheWriter" /> <property name="defaultExpiration" 
+		value="${redis.expiration}" /> </bean> <bean id="redisCacheConfig" class="com.ssm.service.RedisCacheConfig"> 
+		<constructor-arg ref="jedisConnectionFactory" /> <constructor-arg ref="defaultRedisCacheWriter" 
+		/> <constructor-arg ref="redisCacheManager" /> </bean> -->
+	<!-- redis config end -->
+	<!-- 使用中间类解决RedisCache.jedisConnectionFactory的静态注入，从而使MyBatis实现第三方缓存 -->
+<bean id="redisCacheTransfer" class="com.ssm.cache.RedisCacheTransfer">
+    <property name="jedisConnectionFactory" ref="jedisConnectionFactory"/>
+</bean>
 </beans>

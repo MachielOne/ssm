@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.ssm.dao.BookMapper;
@@ -21,7 +23,7 @@ public class BookServiceImpl implements BookService {
 	public int updateItem(Book book) {
 		return this.bookMapper.updateByPrimaryKey(book);
 	}
-
+	
 	public int insertItem(Book book) {
 		return this.bookMapper.insert(book);
 	}
