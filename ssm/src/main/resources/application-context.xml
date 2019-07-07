@@ -76,10 +76,13 @@
 	<!-- <aop:config> <aop:pointcut id="transactionPointcut" expression="execution(* 
 		com.scarecrow.elearning.uac.*.*(..))" /> <aop:advisor advice-ref="txAdvice" 
 		pointcut-ref="transactionPointcut" /> </aop:config> -->
-	<aop:config>
+	<!-- <aop:config>
 		<aop:advisor advice-ref="txAdvice"
 			pointcut="execution(* com.ssm.service.*.*(..))" />
-	</aop:config>
+	</aop:config> -->
+	<!-- 自动为切面方法中匹配的方法所在的类生成代理对象。 -->
+	<aop:aspectj-autoproxy proxy-target-class="true" />
+
 	<!-- redis config start -->
 	<!-- 配置JedisPoolConfig实例 -->
 	<bean id="jedisPoolConfig"
@@ -134,7 +137,9 @@
 		/> <constructor-arg ref="redisCacheManager" /> </bean> -->
 	<!-- redis config end -->
 	<!-- 使用中间类解决RedisCache.jedisConnectionFactory的静态注入，从而使MyBatis实现第三方缓存 -->
-<bean id="redisCacheTransfer" class="com.ssm.cache.RedisCacheTransfer">
-    <property name="jedisConnectionFactory" ref="jedisConnectionFactory"/>
-</bean>
+	<bean id="redisCacheTransfer"
+		class="com.ssm.cache.RedisCacheTransfer">
+		<property name="jedisConnectionFactory"
+			ref="jedisConnectionFactory" />
+	</bean>
 </beans>
